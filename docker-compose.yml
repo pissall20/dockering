@@ -1,0 +1,77 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: production_nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - main_app
+    links:
+      - main_app
+    network_mode: bridge  
+  db:
+    image: mysql:5.7
+    environment:
+      PMYSQL_DATABASE: 'test_db'
+      MYSQL_PASSWORD: '12345'
+      MYSQL_ROOT_PASSWORD: '12345'
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./sample/mysql:/var/lib/mysql
+    network_mode: bridge
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./sample/redis:/var/lib/redis/data
+    network_mode: bridge
+  main_app:
+      build: .
+      links:
+          - db
+          - redis
+      command: bash -c "bundle exec rake db:create db:migrate && bundle exec unicorn -c config/unicorn.rb"
+      # command: bash -c "rm /your-app-path/tmp/pids/server.pid && bundle exec rake db:create db:migrate && rails s"
+      volumes:
+          - .:/app_docker
+      ports:
+          - '3000:3000'
+      depends_on:
+        - redis
+        - db
+      restart: always
+      network_mode: bridge
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq
+    links:
+      - db
+      - redis
+    depends_on:
+      - redis
+      - db
+    # volumes:
+    #   - .:/app_docker
+    restart: always
+    network_mode: bridge
+
+  crono:
+    build: .
+    command: bundle exec crono
+    links:
+      - db
+      - redis
+    depends_on:
+        - redis
+        - db
+    volumes:
+      - .:/app_docker
+    restart: always
+    network_mode: bridge
+

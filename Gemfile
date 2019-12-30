@@ -54,4 +54,4 @@ gem 'redis'
 gem 'redis-rails'
 gem 'redis-objects'
 gem 'crono'
-
+gem 'unicorn', '~> 4.9'

@@ -5,11 +5,11 @@
 # You can use any class. The only requirement is that
 # class should have a method `perform` without arguments.
 #
-# class TestJob
-#   def perform
-#     puts 'Test!'
-#   end
-# end
-#
-# Crono.perform(TestJob).every 2.days, at: '15:30'
-#
+class TestJob
+  def perform
+    puts 'Test!'
+  end
+end
+
+Crono.perform(TestJob).every 2.days, at: '15:30'
+
